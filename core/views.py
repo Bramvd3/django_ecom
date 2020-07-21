@@ -25,7 +25,7 @@ class checkoutView(View):
         context = {
             'form': form
         }
-        return render(self.request, "checkout-page.html")
+        return render(self.request, "checkout-page.html", context)
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
