@@ -8,6 +8,8 @@ from .models import Item, OrderItem, Order, BillingAddress
 from .forms import CheckoutForm
 from django.utils import timezone
 
+import stripe
+
 # Create your views here.
 
 
@@ -62,6 +64,11 @@ class checkoutView(View):
             messages.error(request, "You do not have an active order")
             return redirect('core:order-summary')
         print(self.request.POST)
+
+
+class PaymentView(View):
+    def get(self, *args, **kwargs):
+        return render(self.request, "payment.html")
 
 
 class HomeView(ListView):
@@ -191,3 +198,17 @@ def remove_single_item_from_cart(request, slug):
         return redirect("core:product-page",
                         slug=slug
                         )
+
+
+def create_payment():
+    try:
+        data = json.loads(request.data)
+        intent = stripe.PaymentIntent.create(
+            amount=calculate_order_amount(data['items']),
+            currency='usd'
+        )
+        return jsonify({
+            'clientSecret': intent['client_secret']
+        })
+    except Exception as e:
+        return jsonify(error=str(e)), 403
